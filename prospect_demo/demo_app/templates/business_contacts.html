@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prospect.name }} - Contacts</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: {{ prospect.primary_color|default:"#336699" }};
+            --secondary-color: {{ prospect.secondary_color|default:"#66aacc" }};
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            width: 250px;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-brand {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-brand h4 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            padding: 0 20px;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu li a {
+            display: block;
+            padding: 10px 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu li a:hover, .sidebar-menu li a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-menu li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Content area */
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        
+        .page-title {
+            margin-bottom: 30px;
+        }
+        
+        .page-title h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Tables */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            border-top-left-radius: 10px !important;
+            border-top-right-radius: 10px !important;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        
+        .badge {
+            padding: 6px 10px;
+            font-weight: 500;
+        }
+        
+        .badge-lead {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .badge-customer {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .badge-past_customer {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        /* Filter buttons */
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .filter-buttons .btn {
+            margin-right: 10px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .filter-buttons .btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-brand h4, .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 18px;
+            }
+            
+            .content {
+                margin-left: 70px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-building mb-2"></i>
+            <h4>{{ prospect.name }}</h4>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'business_dashboard' prospect.slug %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_appointments' prospect.slug %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Appointments</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_calendar' prospect.slug %}">
+                    <i class="fas fa-calendar-week"></i>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_messages' prospect.slug %}">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_contacts' prospect.slug %}" class="active">
+                    <i class="fas fa-address-book"></i>
+                    <span>Contacts</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'prospect_direct' prospect.slug %}" target="_blank">
+                    <i class="fas fa-globe"></i>
+                    <span>View Website</span>
+                </a>
+            </li>
+            <li class="mt-5">
+                <a href="{% url 'business_logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Content area -->
+    <div class="content">
+        <div class="page-title d-flex justify-content-between align-items-center">
+            <h1>Contacts</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newContactModal">
+                <i class="fas fa-plus me-2"></i> New Contact
+            </button>
+        </div>
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Filters -->
+        <div class="filter-buttons">
+            <a href="{% url 'business_contacts' prospect.slug %}" class="btn {% if not contact_type_filter %}active{% endif %}">All</a>
+            <a href="?type=lead" class="btn {% if contact_type_filter == 'lead' %}active{% endif %}">Leads</a>
+            <a href="?type=customer" class="btn {% if contact_type_filter == 'customer' %}active{% endif %}">Customers</a>
+            <a href="?type=past_customer" class="btn {% if contact_type_filter == 'past_customer' %}active{% endif %}">Past Customers</a>
+        </div>
+        
+        <!-- Contacts table -->
+        <div class="card">
+            <div class="card-header">
+                <h5>
+                    {% if contact_type_filter %}
+                        {{ contact_type_filter|title }} Contacts
+                    {% else %}
+                        All Contacts
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if contacts %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Contact Info</th>
+                                <th>Address</th>
+                                <th>Type</th>
+                                <th>Service History</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contact in contacts %}
+                            <tr>
+                                <td>{{ contact.name }}</td>
+                                <td>
+                                    {% if contact.phone %}
+                                    <div><i class="fas fa-phone-alt me-2 text-muted"></i> <a href="tel:{{ contact.phone }}">{{ contact.phone }}</a></div>
+                                    {% endif %}
+                                    {% if contact.email %}
+                                    <div><i class="fas fa-envelope me-2 text-muted"></i> <a href="mailto:{{ contact.email }}">{{ contact.email }}</a></div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if contact.address %}
+                                    {{ contact.address }}<br>
+                                    {{ contact.city }}, {{ contact.state }} {{ contact.postal_code }}
+                                    {% else %}
+                                    <span class="text-muted">No address</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if contact.contact_type == 'lead' %}
+                                    <span class="badge badge-lead">Lead</span>
+                                    {% elif contact.contact_type == 'customer' %}
+                                    <span class="badge badge-customer">Customer</span>
+                                    {% elif contact.contact_type == 'past_customer' %}
+                                    <span class="badge badge-past_customer">Past Customer</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {{ contact.service_count }} services
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary view-contact" data-id="{{ contact.id }}" data-bs-toggle="modal" data-bs-target="#viewContactModal">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-primary edit-contact" data-id="{{ contact.id }}" data-bs-toggle="modal" data-bs-target="#editContactModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success schedule-contact" data-id="{{ contact.id }}" data-name="{{ contact.name }}" data-bs-toggle="modal" data-bs-target="#scheduleContactModal">
+                                        <i class="fas fa-calendar-plus"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">No contacts found. Add a new contact to get started!</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- View Contact Modal -->
+    <div class="modal fade" id="viewContactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Contact Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="contact-details">
+                        <h4 id="contactName" class="mb-3"></h4>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>Phone:</strong> <span id="contactPhone"></span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Email:</strong> <span id="contactEmail"></span></p>
+                            </div>
+                        </div>
+                        
+                        <p><strong>Address:</strong> <span id="contactAddress"></span></p>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <p><strong>Type:</strong> <span id="contactType"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Services:</strong> <span id="contactServices"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Source:</strong> <span id="contactSource"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p><strong>Added:</strong> <span id="contactCreated"></span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p><strong>Notes:</strong></p>
+                            <div class="card">
+                                <div class="card-body" id="contactNotes">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Contact Modal -->
+    <div class="modal fade" id="newContactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newContactForm" method="post" action="{% url 'business_contacts' prospect.slug %}">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="contact_type" class="form-label">Contact Type</label>
+                                <select class="form-select" id="contact_type" name="contact_type">
+                                    <option value="lead">Lead</option>
+                                    <option value="customer">Customer</option>
+                                    <option value="past_customer">Past Customer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="phone" name="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                            <div class="col-12">
+                                <label for="address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="address" name="address">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="city" name="city">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="state" name="state">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="postal_code" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" id="postal_code" name="postal_code">
+                            </div>
+                            <div class="col-12">
+                                <label for="notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Contact</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Contact Modal -->
+    <div class="modal fade" id="editContactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Contact</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editContactForm">
+                        <input type="hidden" id="edit-contact-id">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="edit-name" class="form-label">Name *</label>
+                                <input type="text" class="form-control" id="edit-name" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-contact-type" class="form-label">Contact Type</label>
+                                <select class="form-select" id="edit-contact-type" name="contact_type">
+                                    <option value="lead">Lead</option>
+                                    <option value="customer">Customer</option>
+                                    <option value="past_customer">Past Customer</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-phone" class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="edit-phone" name="phone">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="edit-email" name="email">
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-address" class="form-label">Address</label>
+                                <input type="text" class="form-control" id="edit-address" name="address">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-city" class="form-label">City</label>
+                                <input type="text" class="form-control" id="edit-city" name="city">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-state" class="form-label">State</label>
+                                <input type="text" class="form-control" id="edit-state" name="state">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-postal-code" class="form-label">Postal Code</label>
+                                <input type="text" class="form-control" id="edit-postal-code" name="postal_code">
+                            </div>
+                            <div class="col-12">
+                                <label for="edit-notes" class="form-label">Notes</label>
+                                <textarea class="form-control" id="edit-notes" name="notes" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveContactChanges">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule for Contact Modal -->
+    <div class="modal fade" id="scheduleContactModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Schedule Appointment for <span id="scheduleContactName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="scheduleAppointmentForm" class="row g-3">
+                        <input type="hidden" id="schedule-contact-id">
+                        <div class="col-md-6">
+                            <label for="service-type" class="form-label">Service Type *</label>
+                            <select class="form-control" id="service-type" required>
+                                <option value="" selected disabled>Select a service</option>
+                                <option value="repair">Repair & Maintenance</option>
+                                <option value="installation">New Installation</option>
+                                <option value="assessment">Home Assessment</option>
+                                <option value="emergency">Emergency Service</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preferred-date" class="form-label">Preferred Date *</label>
+                            <input type="date" class="form-control" id="preferred-date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preferred-time" class="form-label">Preferred Time *</label>
+                            <select class="form-select" id="preferred-time" required>
+                                <option value="" selected disabled>Select a time</option>
+                                <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon (12:00 PM - 4:00 PM)</option>
+                                <option value="evening">Evening (4:00 PM - 7:00 PM)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="service-address" class="form-label">Service Address</label>
+                            <input type="text" class="form-control" id="service-address">
+                        </div>
+                        <div class="col-12">
+                            <label for="service-notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="service-notes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="scheduleAppointment">Schedule</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Demo contact data for the view modal
+        document.querySelectorAll('.view-contact').forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real implementation, you would fetch the contact details from the server
+                // For demo purposes, we'll use hardcoded data based on the row
+                const contactId = this.getAttribute('data-id');
+                
+                // Find the row data
+                const row = this.closest('tr');
+                const name = row.cells[0].textContent.trim();
+                const contactInfo = row.cells[1].textContent.trim().split('\n');
+                const phone = contactInfo[0] ? contactInfo[0].replace('phone_alt', '').trim() : 'N/A';
+                const email = contactInfo[1] ? contactInfo[1].replace('envelope', '').trim() : 'N/A';
+                const address = row.cells[2].textContent.trim();
+                const type = row.cells[3].textContent.trim();
+                const services = row.cells[4].textContent.trim();
+                
+                // Populate modal
+                document.getElementById('contactName').textContent = name;
+                document.getElementById('contactPhone').textContent = phone;
+                document.getElementById('contactEmail').textContent = email;
+                document.getElementById('contactAddress').textContent = address;
+                document.getElementById('contactType').textContent = type;
+                document.getElementById('contactServices').textContent = services;
+                
+                // Set source based on contact data (we'll prefer chat for demo purposes)
+                let source = 'Website Chat';
+                // Only use other sources for specific patterns to match our demo
+                if (contactId % 3 === 1) {
+                    source = 'Phone Call';
+                } else if (contactId % 3 === 2) {
+                    source = 'Website Form';
+                }
+                document.getElementById('contactSource').textContent = source;
+                
+                document.getElementById('contactCreated').textContent = '2 weeks ago';
+                
+                // Set notes based on source
+                let notes = '';
+                if (source === 'Website Chat') {
+                    notes = 'Created from chat conversation. Customer inquired about service options and pricing.';
+                    // Potentially add their message from follow-up question
+                    if (Math.random() > 0.5) {
+                        notes += '\n\nAdditional notes from customer: Looking for regular maintenance for my new HVAC system.';
+                    }
+                } else if (source === 'Phone Call') {
+                    notes = 'Customer called about AC issues. Scheduled initial assessment.';
+                } else {
+                    notes = 'Submitted request through website contact form.';
+                }
+                document.getElementById('contactNotes').textContent = notes;
+            });
+        });
+        
+        // Edit Contact
+        document.querySelectorAll('.edit-contact').forEach(button => {
+            button.addEventListener('click', function() {
+                const contactId = this.getAttribute('data-id');
+                
+                // Find the row data
+                const row = this.closest('tr');
+                const name = row.cells[0].textContent.trim();
+                const contactInfo = row.cells[1].textContent.trim().split('\n');
+                const phone = contactInfo[0] ? contactInfo[0].replace('phone_alt', '').trim() : '';
+                const email = contactInfo[1] ? contactInfo[1].replace('envelope', '').trim() : '';
+                const addressInfo = row.cells[2].textContent.trim().split('\n');
+                const address = addressInfo[0] || '';
+                const cityState = addressInfo[1] ? addressInfo[1].split(',') : ['', ''];
+                const city = cityState[0] ? cityState[0].trim() : '';
+                const stateZip = cityState[1] ? cityState[1].trim().split(' ') : ['', ''];
+                const state = stateZip[0] || '';
+                const postalCode = stateZip[1] || '';
+                
+                // Set contact type
+                let contactType = 'lead';
+                if (row.cells[3].textContent.includes('Customer')) {
+                    contactType = 'customer';
+                } else if (row.cells[3].textContent.includes('Past')) {
+                    contactType = 'past_customer';
+                }
+                
+                // Populate form fields
+                document.getElementById('edit-contact-id').value = contactId;
+                document.getElementById('edit-name').value = name;
+                document.getElementById('edit-phone').value = phone;
+                document.getElementById('edit-email').value = email;
+                document.getElementById('edit-address').value = address;
+                document.getElementById('edit-city').value = city;
+                document.getElementById('edit-state').value = state;
+                document.getElementById('edit-postal-code').value = postalCode;
+                document.getElementById('edit-contact-type').value = contactType;
+                
+                // Set notes based on same logic as view
+                let source = 'Website Chat';
+                if (contactId % 3 === 1) {
+                    source = 'Phone Call';
+                } else if (contactId % 3 === 2) {
+                    source = 'Website Form';
+                }
+                
+                let notes = '';
+                if (source === 'Website Chat') {
+                    notes = 'Created from chat conversation. Customer inquired about service options and pricing.';
+                    if (Math.random() > 0.5) {
+                        notes += '\n\nAdditional notes from customer: Looking for regular maintenance for my new HVAC system.';
+                    }
+                } else if (source === 'Phone Call') {
+                    notes = 'Customer called about AC issues. Scheduled initial assessment.';
+                } else {
+                    notes = 'Submitted request through website contact form.';
+                }
+                document.getElementById('edit-notes').value = notes;
+            });
+        });
+        
+        // Save Contact Changes
+        document.getElementById('saveContactChanges').addEventListener('click', function() {
+            // Show success message
+            alert('Contact updated successfully!');
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('editContactModal')).hide();
+        });
+        
+        // Schedule for contact
+        document.querySelectorAll('.schedule-contact').forEach(button => {
+            button.addEventListener('click', function() {
+                const contactId = this.getAttribute('data-id');
+                const contactName = this.getAttribute('data-name');
+                document.getElementById('scheduleContactName').textContent = contactName;
+                document.getElementById('schedule-contact-id').value = contactId;
+                
+                // Set today's date as minimum date
+                const today = new Date();
+                const formattedDate = today.toISOString().split('T')[0];
+                const dateInput = document.getElementById('preferred-date');
+                dateInput.min = formattedDate;
+                dateInput.value = formattedDate;
+                
+                // Find the row data to pre-fill address
+                const row = this.closest('tr');
+                const addressInfo = row.cells[2].textContent.trim().split('\n');
+                const address = addressInfo[0] || '';
+                if (address && !address.includes('No address')) {
+                    document.getElementById('service-address').value = address;
+                }
+            });
+        });
+        
+        // Schedule Appointment
+        document.getElementById('scheduleAppointment').addEventListener('click', function() {
+            // Validate form
+            const serviceType = document.getElementById('service-type').value;
+            const preferredDate = document.getElementById('preferred-date').value;
+            const preferredTime = document.getElementById('preferred-time').value;
+            
+            if (!serviceType || !preferredDate || !preferredTime) {
+                alert('Please fill out all required fields');
+                return;
+            }
+            
+            // Show success message
+            alert('Appointment scheduled successfully!');
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('scheduleContactModal')).hide();
+        });
+    </script>
+</body>
+</html>

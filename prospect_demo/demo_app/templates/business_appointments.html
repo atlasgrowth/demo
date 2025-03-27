@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prospect.name }} - Appointments</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: {{ prospect.primary_color|default:"#336699" }};
+            --secondary-color: {{ prospect.secondary_color|default:"#66aacc" }};
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            width: 250px;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-brand {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-brand h4 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            padding: 0 20px;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu li a {
+            display: block;
+            padding: 10px 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu li a:hover, .sidebar-menu li a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-menu li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Content area */
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        
+        .page-title {
+            margin-bottom: 30px;
+        }
+        
+        .page-title h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Tables */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            padding: 15px 20px;
+            border-top-left-radius: 10px !important;
+            border-top-right-radius: 10px !important;
+        }
+        
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #6c757d;
+        }
+        
+        .badge {
+            padding: 6px 10px;
+            font-weight: 500;
+        }
+        
+        .badge-pending {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+        }
+        
+        .badge-confirmed {
+            background-color: rgba(25, 135, 84, 0.1);
+            color: #198754;
+        }
+        
+        .badge-completed {
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+        }
+        
+        .badge-cancelled {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+        
+        /* Filter buttons */
+        .filter-buttons {
+            margin-bottom: 20px;
+        }
+        
+        .filter-buttons .btn {
+            margin-right: 10px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .filter-buttons .btn.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-brand h4, .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 18px;
+            }
+            
+            .content {
+                margin-left: 70px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-building mb-2"></i>
+            <h4>{{ prospect.name }}</h4>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'business_dashboard' prospect.slug %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_appointments' prospect.slug %}" class="active">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Appointments</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_calendar' prospect.slug %}">
+                    <i class="fas fa-calendar-week"></i>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_messages' prospect.slug %}">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                    {% if unread_messages > 0 %}
+                    <span class="badge bg-danger float-end">{{ unread_messages }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_contacts' prospect.slug %}">
+                    <i class="fas fa-address-book"></i>
+                    <span>Contacts</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'prospect_direct' prospect.slug %}" target="_blank">
+                    <i class="fas fa-globe"></i>
+                    <span>View Website</span>
+                </a>
+            </li>
+            <li class="mt-5">
+                <a href="{% url 'business_logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Content area -->
+    <div class="content">
+        <div class="page-title d-flex justify-content-between align-items-center">
+            <h1>Appointments</h1>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAppointmentModal">
+                <i class="fas fa-plus me-2"></i> New Appointment
+            </button>
+        </div>
+        
+        <!-- Filters -->
+        <div class="filter-buttons">
+            <a href="{% url 'business_appointments' prospect.slug %}" class="btn {% if not status_filter %}active{% endif %}">All</a>
+            <a href="?status=pending" class="btn {% if status_filter == 'pending' %}active{% endif %}">Pending</a>
+            <a href="?status=confirmed" class="btn {% if status_filter == 'confirmed' %}active{% endif %}">Confirmed</a>
+            <a href="?status=completed" class="btn {% if status_filter == 'completed' %}active{% endif %}">Completed</a>
+            <a href="?status=cancelled" class="btn {% if status_filter == 'cancelled' %}active{% endif %}">Cancelled</a>
+        </div>
+        
+        <!-- Appointments table -->
+        <div class="card">
+            <div class="card-header">
+                <h5>
+                    {% if status_filter %}
+                        {{ status_filter|title }} Appointments
+                    {% else %}
+                        All Appointments
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Contact</th>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                            <tr>
+                                <td>{{ appointment.customer_name }}</td>
+                                <td>
+                                    {% if appointment.customer_phone %}
+                                    <a href="tel:{{ appointment.customer_phone }}">{{ appointment.customer_phone }}</a>
+                                    {% endif %}
+                                    {% if appointment.customer_email %}
+                                    <br>
+                                    <a href="mailto:{{ appointment.customer_email }}">{{ appointment.customer_email }}</a>
+                                    {% endif %}
+                                </td>
+                                <td>{{ appointment.service_type }}</td>
+                                <td>{{ appointment.appointment_date }}</td>
+                                <td>{{ appointment.appointment_time_slot }}</td>
+                                <td>
+                                    {% if appointment.status == 'pending' %}
+                                    <span class="badge badge-pending">Pending</span>
+                                    {% elif appointment.status == 'confirmed' %}
+                                    <span class="badge badge-confirmed">Confirmed</span>
+                                    {% elif appointment.status == 'completed' %}
+                                    <span class="badge badge-completed">Completed</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                    <span class="badge badge-cancelled">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-secondary view-appointment" data-id="{{ appointment.id }}" data-bs-toggle="modal" data-bs-target="#viewAppointmentModal">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    
+                                    {% if appointment.status == 'pending' %}
+                                    <button class="btn btn-sm btn-outline-success confirm-appointment" data-id="{{ appointment.id }}">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if appointment.status == 'pending' or appointment.status == 'confirmed' %}
+                                    <button class="btn btn-sm btn-outline-danger cancel-appointment" data-id="{{ appointment.id }}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    {% if appointment.status == 'confirmed' %}
+                                    <button class="btn btn-sm btn-outline-primary complete-appointment" data-id="{{ appointment.id }}">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">No appointments found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- View Appointment Modal -->
+    <div class="modal fade" id="viewAppointmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Appointment Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="appointment-details">
+                        <p><strong>Customer:</strong> <span id="customerName"></span></p>
+                        <p><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                        <p><strong>Email:</strong> <span id="customerEmail"></span></p>
+                        <p><strong>Service:</strong> <span id="serviceType"></span></p>
+                        <p><strong>Date:</strong> <span id="appointmentDate"></span></p>
+                        <p><strong>Time:</strong> <span id="appointmentTime"></span></p>
+                        <p><strong>Address:</strong> <span id="serviceAddress"></span></p>
+                        <p><strong>Status:</strong> <span id="appointmentStatus"></span></p>
+                        <p><strong>Notes:</strong></p>
+                        <div class="card">
+                            <div class="card-body" id="appointmentNotes">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Appointment Modal -->
+    <div class="modal fade" id="newAppointmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Appointment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newAppointmentForm" class="row g-3">
+                        <div class="col-md-6">
+                            <label for="fullName" class="form-label">Customer Name</label>
+                            <input type="text" class="form-control" id="fullName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="emailAddress" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="emailAddress">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="serviceType" class="form-label">Service Type</label>
+                            <select class="form-select" id="serviceType" required>
+                                <option value="" selected disabled>Select a service</option>
+                                <option value="Repair & Maintenance">Repair & Maintenance</option>
+                                <option value="New Installation">New Installation</option>
+                                <option value="Home Assessment">Home Assessment</option>
+                                <option value="Emergency Service">Emergency Service</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preferredDate" class="form-label">Appointment Date</label>
+                            <input type="date" class="form-control" id="preferredDate" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="preferredTime" class="form-label">Appointment Time</label>
+                            <select class="form-select" id="preferredTime" required>
+                                <option value="" selected disabled>Select a time</option>
+                                <option value="Morning (8:00 AM - 12:00 PM)">Morning (8:00 AM - 12:00 PM)</option>
+                                <option value="Afternoon (12:00 PM - 4:00 PM)">Afternoon (12:00 PM - 4:00 PM)</option>
+                                <option value="Evening (4:00 PM - 7:00 PM)">Evening (4:00 PM - 7:00 PM)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="serviceAddress" class="form-label">Service Address</label>
+                            <input type="text" class="form-control" id="serviceAddress" required>
+                        </div>
+                        <div class="col-12">
+                            <label for="serviceNotes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="serviceNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveAppointment">Save Appointment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Demo data for the view modal
+        document.querySelectorAll('.view-appointment').forEach(button => {
+            button.addEventListener('click', function() {
+                // In a real implementation, you would fetch the appointment details from the server
+                // For demo purposes, we'll use hardcoded data
+                const appointmentId = this.getAttribute('data-id');
+                
+                // Find the row data
+                const row = this.closest('tr');
+                const customerName = row.cells[0].textContent;
+                const contactInfo = row.cells[1].textContent.split('\n');
+                const customerPhone = contactInfo[0] ? contactInfo[0].trim() : 'N/A';
+                const customerEmail = contactInfo[1] ? contactInfo[1].trim() : 'N/A';
+                const serviceType = row.cells[2].textContent;
+                const appointmentDate = row.cells[3].textContent;
+                const appointmentTime = row.cells[4].textContent;
+                const appointmentStatus = row.cells[5].textContent.trim();
+                
+                // Populate modal
+                document.getElementById('customerName').textContent = customerName;
+                document.getElementById('customerPhone').textContent = customerPhone;
+                document.getElementById('customerEmail').textContent = customerEmail;
+                document.getElementById('serviceType').textContent = serviceType;
+                document.getElementById('appointmentDate').textContent = appointmentDate;
+                document.getElementById('appointmentTime').textContent = appointmentTime;
+                document.getElementById('serviceAddress').textContent = '123 Main St, Birmingham, AL';
+                document.getElementById('appointmentStatus').textContent = appointmentStatus;
+                document.getElementById('appointmentNotes').textContent = 'Customer requested service for their central air conditioning unit. They mentioned it's not cooling properly.';
+            });
+        });
+        
+        // Updates for status changes - actually update the appointment status via API
+        document.querySelectorAll('.confirm-appointment').forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                
+                // Show a loading indicator
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+                
+                // Call the API to update the appointment status
+                fetch(`/api/appointment/${appointmentId}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'confirmed',
+                        notes: 'Appointment confirmed by business'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and reload
+                        alert('Appointment has been confirmed successfully.');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                        this.innerHTML = '<i class="fas fa-check"></i>';
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating appointment status');
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    this.disabled = false;
+                });
+            });
+        });
+        
+        document.querySelectorAll('.cancel-appointment').forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                
+                if (confirm('Are you sure you want to cancel this appointment?')) {
+                    // Show a loading indicator
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                    this.disabled = true;
+                    
+                    // Call the API to update the appointment status
+                    fetch(`/api/appointment/${appointmentId}/update/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            status: 'cancelled',
+                            notes: 'Appointment cancelled by business'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message and reload
+                            alert('Appointment has been cancelled successfully.');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.error || 'Unknown error'));
+                            this.innerHTML = '<i class="fas fa-times"></i>';
+                            this.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error updating appointment status');
+                        this.innerHTML = '<i class="fas fa-times"></i>';
+                        this.disabled = false;
+                    });
+                }
+            });
+        });
+        
+        document.querySelectorAll('.complete-appointment').forEach(button => {
+            button.addEventListener('click', function() {
+                const appointmentId = this.getAttribute('data-id');
+                
+                // Show a loading indicator
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.disabled = true;
+                
+                // Call the API to update the appointment status
+                fetch(`/api/appointment/${appointmentId}/update/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        status: 'completed',
+                        notes: 'Appointment completed by business'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success message and reload
+                        alert('Appointment has been marked as completed.');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.error || 'Unknown error'));
+                        this.innerHTML = '<i class="fas fa-check-double"></i>';
+                        this.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating appointment status');
+                    this.innerHTML = '<i class="fas fa-check-double"></i>';
+                    this.disabled = false;
+                });
+            });
+        });
+        
+        // New appointment form submission
+        document.getElementById('saveAppointment').addEventListener('click', function() {
+            const form = document.getElementById('newAppointmentForm');
+            if (form.checkValidity()) {
+                alert('New appointment has been created!');
+                form.reset();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newAppointmentModal'));
+                modal.hide();
+                location.reload(); // In a real app, you would add the new appointment to the table
+            } else {
+                form.reportValidity();
+            }
+        });
+    </script>
+</body>
+</html>

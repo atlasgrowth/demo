@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prospect.name }} - Messages</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: {{ prospect.primary_color|default:"#336699" }};
+            --secondary-color: {{ prospect.secondary_color|default:"#66aacc" }};
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background-color: var(--primary-color);
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            width: 250px;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            padding: 20px 0;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-brand {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar-brand h4 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-menu {
+            padding: 0;
+            list-style: none;
+        }
+        
+        .sidebar-menu li {
+            padding: 0 20px;
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu li a {
+            display: block;
+            padding: 10px 15px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu li a:hover, .sidebar-menu li a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar-menu li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        /* Content area */
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        
+        .page-title {
+            margin-bottom: 30px;
+        }
+        
+        .page-title h1 {
+            font-size: 24px;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Chat layout */
+        .chat-container {
+            display: flex;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 120px);
+        }
+        
+        .chat-sidebar {
+            width: 300px;
+            border-right: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Conversation list */
+        .conversation-list {
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .conversation-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .conversation-item:hover, .conversation-item.active {
+            background-color: #f8f9fa;
+        }
+        
+        .conversation-item .name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .conversation-item .preview {
+            color: #6c757d;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 0.9rem;
+        }
+        
+        .conversation-item .time {
+            font-size: 0.8rem;
+            color: #adb5bd;
+        }
+        
+        .conversation-item .badge {
+            font-size: 0.7rem;
+            padding: 3px 6px;
+        }
+        
+        /* Messages area */
+        .chat-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            background-color: #f8f9fa;
+        }
+        
+        .chat-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message.customer {
+            align-items: flex-start;
+        }
+        
+        .message.business {
+            align-items: flex-end;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 10px;
+            position: relative;
+        }
+        
+        .message.customer .message-content {
+            background-color: #e9ecef;
+        }
+        
+        .message.business .message-content {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            color: #adb5bd;
+            margin-top: 5px;
+        }
+        
+        .chat-input {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background-color: white;
+        }
+        
+        .chat-input .input-group {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            border-radius: 30px;
+            overflow: hidden;
+        }
+        
+        .chat-input .form-control {
+            border: none;
+            padding: 12px 15px;
+        }
+        
+        .chat-input .btn {
+            border: none;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0 20px;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #adb5bd;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar-brand h4, .sidebar-menu li a span {
+                display: none;
+            }
+            
+            .sidebar-menu li a i {
+                margin-right: 0;
+                font-size: 18px;
+            }
+            
+            .content {
+                margin-left: 70px;
+            }
+            
+            .chat-sidebar {
+                width: 200px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                padding: 15px;
+            }
+            
+            .chat-container {
+                flex-direction: column;
+                height: calc(100vh - 90px);
+            }
+            
+            .chat-sidebar {
+                width: 100%;
+                height: 300px;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+            
+            .conversation-list {
+                overflow-y: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-building mb-2"></i>
+            <h4>{{ prospect.name }}</h4>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="{% url 'business_dashboard' prospect.slug %}">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_appointments' prospect.slug %}">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Appointments</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_calendar' prospect.slug %}">
+                    <i class="fas fa-calendar-week"></i>
+                    <span>Calendar</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_messages' prospect.slug %}" class="active">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'business_contacts' prospect.slug %}">
+                    <i class="fas fa-address-book"></i>
+                    <span>Contacts</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'prospect_direct' prospect.slug %}" target="_blank">
+                    <i class="fas fa-globe"></i>
+                    <span>View Website</span>
+                </a>
+            </li>
+            <li class="mt-5">
+                <a href="{% url 'business_logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Content area -->
+    <div class="content">
+        <div class="page-title">
+            <h1>Messages</h1>
+        </div>
+        
+        <!-- Chat container -->
+        <div class="chat-container">
+            <!-- Conversation list -->
+            <div class="chat-sidebar">
+                <div class="conversation-list">
+                    {% if conversations %}
+                    {% for conversation_id, conversation in conversations.items %}
+                    <div class="conversation-item" data-conversation="{{ conversation_id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="name">{{ conversation.sender_name }}</div>
+                            <div class="time">{{ conversation.latest_timestamp|date:"M d" }}</div>
+                        </div>
+                        <div class="preview">
+                            {% with last_message=conversation.messages|last %}
+                                {% if last_message %}
+                                    {{ last_message.message|truncatechars:30 }}
+                                {% else %}
+                                    No messages
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                        {% if conversation.unread > 0 %}
+                        <div class="d-flex justify-content-between align-items-center mt-1">
+                            <span></span>
+                            <span class="badge bg-danger">{{ conversation.unread }} new</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-comments text-muted"></i>
+                        <p>No conversations yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Messages area -->
+            <div class="chat-main">
+                <div class="chat-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 id="conversationName">Select a conversation</h5>
+                        <small id="contactLink" class="d-none">
+                            <i class="fas fa-address-book text-primary me-1"></i>
+                            <a href="{% url 'business_contacts' prospect.slug %}">View in contacts</a>
+                        </small>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary d-none" id="refreshButton">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="chat-messages" id="messagesContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-comment-dots text-muted"></i>
+                        <p>Select a conversation to view messages.</p>
+                    </div>
+                </div>
+                
+                <div class="chat-input">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Type your message..." id="messageInput" disabled>
+                        <button class="btn" id="sendMessage" disabled>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Conversation data
+        const conversations = {
+            {% for conversation_id, conversation in conversations.items %}
+            "{{ conversation_id }}": {
+                "name": "{{ conversation.sender_name }}",
+                "messages": [
+                    {% for message in conversation.messages %}
+                    {
+                        "id": {{ message.id }},
+                        "sender_type": "{{ message.sender_type }}",
+                        "sender_name": "{{ message.sender_name|escapejs }}",
+                        "message": "{{ message.message|escapejs }}",
+                        "timestamp": "{{ message.timestamp|date:'M d, H:i' }}"
+                    }{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                "unread": {{ conversation.unread|default:0 }}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        };
+        
+        let currentConversation = null;
+        const messagesContainer = document.getElementById('messagesContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendMessage');
+        const conversationName = document.getElementById('conversationName');
+        const refreshButton = document.getElementById('refreshButton');
+        
+        // Select conversation
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const conversationId = this.getAttribute('data-conversation');
+                selectConversation(conversationId);
+                
+                // Mark as active
+                document.querySelectorAll('.conversation-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Remove unread badge (in a real app, you would call the API to mark as read)
+                const badge = this.querySelector('.badge');
+                if (badge) badge.remove();
+            });
+        });
+        
+        // Select conversation and display messages
+        function selectConversation(conversationId) {
+            if (!conversations[conversationId]) return;
+            
+            currentConversation = conversationId;
+            const conversation = conversations[conversationId];
+            
+            // Update header
+            conversationName.textContent = conversation.name;
+            refreshButton.classList.remove('d-none');
+            
+            // Check if this person is in the contacts system
+            // In a real app, we would make an AJAX call to check if the contact exists
+            // For this demo, we'll just check if any system messages mention 'Customer Information'
+            const contactLink = document.getElementById('contactLink');
+            contactLink.classList.add('d-none');
+            
+            // Look for system messages with contact info
+            const hasContactInfo = conversation.messages.some(msg => 
+                msg.sender_type === 'system' && msg.message.includes('Customer Information:')
+            );
+            
+            if (hasContactInfo) {
+                contactLink.classList.remove('d-none');
+            }
+            
+            // Enable input
+            messageInput.disabled = false;
+            sendButton.disabled = false;
+            
+            // Display messages
+            displayMessages(conversation.messages);
+        }
+        
+        // Display messages in the container
+        function displayMessages(messages) {
+            messagesContainer.innerHTML = '';
+            
+            messages.forEach(message => {
+                const messageEl = document.createElement('div');
+                messageEl.className = `message ${message.sender_type}`;
+                
+                messageEl.innerHTML = `
+                    <div class="message-content">
+                        <p class="mb-0">${message.message}</p>
+                    </div>
+                    <div class="message-time">${message.timestamp}</div>
+                `;
+                
+                messagesContainer.appendChild(messageEl);
+            });
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // Send message
+        sendButton.addEventListener('click', function() {
+            const message = messageInput.value.trim();
+            if (!message || !currentConversation) return;
+            
+            // Add message to conversation
+            const newMessage = {
+                id: Date.now(), // Generate temp ID
+                sender_type: 'business',
+                sender_name: '{{ prospect.name }}',
+                message: message,
+                timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+            };
+            
+            conversations[currentConversation].messages.push(newMessage);
+            
+            // Display messages
+            displayMessages(conversations[currentConversation].messages);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // In a real app, you would call the API to send the message
+            // For demo purposes, let's simulate a reply after a delay
+            setTimeout(() => {
+                const autoReply = {
+                    id: Date.now() + 1,
+                    sender_type: 'customer',
+                    sender_name: conversations[currentConversation].name,
+                    message: 'Thank you for your message. I appreciate the quick response!',
+                    timestamp: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                };
+                
+                conversations[currentConversation].messages.push(autoReply);
+                displayMessages(conversations[currentConversation].messages);
+            }, 3000);
+        });
+        
+        // Send message on Enter key
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendButton.click();
+            }
+        });
+        
+        // Refresh button
+        refreshButton.addEventListener('click', function() {
+            if (!currentConversation) return;
+            
+            // In a real app, you would fetch new messages from the server
+            // For demo purposes, let's just show a notification
+            alert('Messages refreshed');
+        });
+        
+        // Select first conversation if any exist
+        const firstConversation = document.querySelector('.conversation-item');
+        if (firstConversation) {
+            firstConversation.click();
+        }
+    </script>
+</body>
+</html>
