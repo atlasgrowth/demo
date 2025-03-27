@@ -10,21 +10,10 @@ django.setup()
 
 from demo_app.models import Prospect
 
-def slugify(text):
-    """
-    Custom slugify function to create URL-friendly slugs
-    """
-    # Convert to lowercase
-    text = text.lower()
-    # Remove special characters and replace spaces with hyphens
-    text = re.sub(r'[^a-z0-9\s]', '', text)
-    # Replace spaces with hyphens
-    text = re.sub(r'\s+', '-', text)
-    return text
-
 def generate_login(name):
     """
     Generate login credentials from business name
+    (all lowercase, no spaces, no special characters)
     """
     # Remove all non-alphanumeric characters and spaces, convert to lowercase
     login = re.sub(r'[^a-zA-Z0-9]', '', name).lower()
@@ -85,24 +74,59 @@ def import_from_csv(file_path):
             if not name:
                 continue
             
-            # Generate slug and login
-            slug = slugify(name)
+            # Generate login credentials
             login = generate_login(name)
             
             # Generate colors
             primary_color, secondary_color = generate_colors()
             
+            # Create slug from login (matches username format)
+            # The model will handle uniqueness automatically
+            slug = login
+            
+            # Extract address information
+            address = row.get('full_address', '') or row.get('address', '')
+            city = row.get('city', '')
+            state = row.get('state', '')
+            
+            # Extract contact information
+            phone = (row.get('phone', '') or 
+                     row.get('phone_1', '') or 
+                     '+1 555-123-4567')  # Default if not available
+            
+            website = row.get('site', '') or row.get('website', '')
+            
+            # Extract rating and reviews
+            try:
+                rating = float(row.get('rating', 0)) if row.get('rating') else None
+                reviews_count = int(row.get('reviews', 0)) if row.get('reviews') else 0
+            except (ValueError, TypeError):
+                rating = None
+                reviews_count = 0
+            
+            # Extract business type
+            business_type = row.get('category', '') or 'HVAC contractor'
+            
+            # Extract description
+            description = row.get('description', '') or row.get('about', '') or ''
+            
+            # Extract photo URL
+            photo_url = row.get('photo', '')
+            
             # Prepare business data
             business_data = {
                 'name': name,
                 'slug': slug,
-                'phone': row.get('phone', ''),
-                'address': row.get('address', ''),
-                'city': row.get('city', ''),
-                'state': row.get('state', ''),
-                'business_type': 'HVAC contractor',  # Default
-                'rating': float(row.get('rating', 0)) if row.get('rating') else None,
-                'reviews_count': int(row.get('reviews', 0)) if row.get('reviews') else 0,
+                'phone': phone,
+                'address': address,
+                'city': city,
+                'state': state,
+                'business_type': business_type,
+                'description': description,
+                'website': website,
+                'rating': rating,
+                'reviews_count': reviews_count,
+                'photo_url': photo_url,
                 'primary_color': primary_color,
                 'secondary_color': secondary_color,
                 'username': login,
@@ -110,22 +134,25 @@ def import_from_csv(file_path):
             }
             
             # Update or create the prospect
-            prospect, created = Prospect.objects.update_or_create(
-                slug=slug,
-                defaults=business_data
-            )
-            
-            count += 1
-            
-            # Print progress every 10 businesses
-            if count % 10 == 0:
-                print(f"Processed {count} businesses...")
+            try:
+                prospect, created = Prospect.objects.update_or_create(
+                    name=name,
+                    defaults=business_data
+                )
+                count += 1
+                
+                # Print progress every 20 businesses
+                if count % 20 == 0:
+                    print(f"Processed {count} businesses...")
+            except Exception as e:
+                print(f"Error importing {name}: {e}")
+                continue
     
     return count
 
 if __name__ == "__main__":
-    # Path to your CSV file
-    csv_path = os.path.join(os.path.dirname(__file__), 'data', 'businesses.csv')
+    # Path to the full CSV file
+    csv_path = os.path.join(os.path.dirname(__file__), 'data', 'businesses-full.csv')
     
     # Create data directory if it doesn't exist
     os.makedirs(os.path.join(os.path.dirname(__file__), 'data'), exist_ok=True)
@@ -144,4 +171,4 @@ if __name__ == "__main__":
     businesses = Prospect.objects.all()[:5]
     print("\nSample of imported businesses:")
     for business in businesses:
-        print(f"{business.name} (Login: {business.username})")
+        print(f"{business.name} (URL: {business.slug}) (Login: {business.username})")

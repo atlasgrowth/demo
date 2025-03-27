@@ -253,77 +253,18 @@
                     {% endfor %}
                 {% endif %}
                 
-                <form method="post" action="{% url 'business_login' %}">
+                <form id="loginForm" method="post" action="{% url 'business_login' %}">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Password</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    <input type="hidden" id="username" name="username" value="{% if business_credentials %}{{ business_credentials.username }}{% endif %}">
+                    <input type="hidden" id="password" name="password" value="{% if business_credentials %}{{ business_credentials.password }}{% endif %}">
+                    <button type="submit" class="btn btn-primary btn-lg py-3">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login to Your Business Portal
                     </button>
                 </form>
                 
-                <div class="login-info">
-                    <h5><i class="fas fa-info-circle me-1"></i> Login Information</h5>
-                    <p>Your username and password are both your business name with no spaces or special characters.</p>
-                    
-                    <div class="login-examples">
-                        <p class="mb-1"><strong>Examples:</strong></p>
-                        <div class="login-example">
-                            <span>coolrayheatingcooling</span>
-                            <button class="copy-btn" onclick="copyToClipboard('coolrayheatingcooling')">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                        </div>
-                        <div class="login-example">
-                            <span>stegallheatingair</span>
-                            <button class="copy-btn" onclick="copyToClipboard('stegallheatingair')">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                        </div>
-                        <div class="login-example">
-                            <span>birminghamhvacexperts</span>
-                            <button class="copy-btn" onclick="copyToClipboard('birminghamhvacexperts')">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="quick-login">
-                    <p class="text-center">Quick Login Buttons:</p>
-                    <div class="row">
-                        <div class="col-4">
-                            <form method="post" action="{% url 'business_login' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="username" value="stegallheatingair">
-                                <input type="hidden" name="password" value="stegallheatingair">
-                                <button type="submit" class="btn btn-success w-100">Stegall</button>
-                            </form>
-                        </div>
-                        <div class="col-4">
-                            <form method="post" action="{% url 'business_login' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="username" value="coolrayheatingcooling">
-                                <input type="hidden" name="password" value="coolrayheatingcooling">
-                                <button type="submit" class="btn btn-success w-100">Coolray</button>
-                            </form>
-                        </div>
-                        <div class="col-4">
-                            <form method="post" action="{% url 'business_login' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="username" value="temperatureprobirmingham">
-                                <input type="hidden" name="password" value="temperatureprobirmingham">
-                                <button type="submit" class="btn btn-success w-100">TempPro</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+                <p class="text-center mt-3 text-muted small">
+                    Your credentials are auto-populated for an easy login experience
+                </p>
             </div>
             
             <div class="login-footer">
@@ -333,17 +274,21 @@
     </div>
     
     <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                // Show a small visual indicator that copying succeeded
-                const copyBtn = event.currentTarget;
-                const originalContent = copyBtn.innerHTML;
-                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        // Auto-submit the form if credentials are pre-filled
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameField = document.getElementById('username');
+            const passwordField = document.getElementById('password');
+            const loginForm = document.getElementById('loginForm');
+            
+            if (usernameField.value && passwordField.value) {
+                // Show submitting message
+                document.querySelector('.btn-primary').innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Logging in...';
+                // Submit the form automatically
                 setTimeout(function() {
-                    copyBtn.innerHTML = originalContent;
-                }, 2000);
-            });
-        }
+                    loginForm.submit();
+                }, 500);
+            }
+        });
     </script>
 </body>
 </html>

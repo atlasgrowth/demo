@@ -1,0 +1,416 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Business Management | {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .business-card {
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        position: relative;
+    }
+    
+    .business-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .business-header {
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .business-card h3 {
+        margin: 0;
+        font-size: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .business-body {
+        padding: 15px;
+    }
+    
+    .business-meta {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 13px;
+    }
+    
+    .business-meta span {
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .business-actions {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .stat-card {
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+    }
+    
+    .stat-card h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+    }
+    
+    .stat-card p {
+        margin: 5px 0 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .badge {
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+    
+    .badge-primary {
+        background-color: #e3f2fd;
+        color: #0d6efd;
+    }
+    
+    .badge-success {
+        background-color: #e8f5e9;
+        color: #4caf50;
+    }
+    
+    .badge-info {
+        background-color: #e0f7fa;
+        color: #00bcd4;
+    }
+    
+    .badge-warning {
+        background-color: #fff8e1;
+        color: #ff9800;
+    }
+    
+    .checkbox-column {
+        width: 40px;
+    }
+    
+    .business-card .select-business {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        transform: scale(1.2);
+    }
+    
+    .sticky-controls {
+        position: sticky;
+        top: 0;
+        background-color: white;
+        padding: 10px 0;
+        z-index: 100;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    
+    .rating-stars {
+        color: #ffc107;
+    }
+    
+    .search-tools {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .thumbnail-container {
+        height: 150px;
+        overflow: hidden;
+        background-color: #f8f9fa;
+    }
+    
+    .thumbnail-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .activity-badge {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 10px;
+    }
+    
+    .activity-badge i {
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <h1>Business Management</h1>
+    
+    <!-- Statistics Row -->
+    <div class="row">
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_businesses }}</h2>
+                <p>Total Businesses</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_prospects }}</h2>
+                <p>Prospects</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_clients }}</h2>
+                <p>Converted Clients</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_appointments }}</h2>
+                <p>Appointments</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_messages }}</h2>
+                <p>Messages</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <h2>{{ total_contacts }}</h2>
+                <p>Contacts</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search & Filter Tools -->
+    <div class="search-tools">
+        <form method="get" class="form-inline">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Search businesses..." value="{{ search_query }}">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select">
+                        <option value="">-- All Statuses --</option>
+                        <option value="prospect" {% if status_filter == "prospect" %}selected{% endif %}>Prospects</option>
+                        <option value="converted" {% if status_filter == "converted" %}selected{% endif %}>Converted Clients</option>
+                        <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select name="sort" class="form-select">
+                                <option value="name" {% if sort_by == "name" %}selected{% endif %}>Name</option>
+                                <option value="city" {% if sort_by == "city" %}selected{% endif %}>City</option>
+                                <option value="rating" {% if sort_by == "rating" %}selected{% endif %}>Rating</option>
+                                <option value="activity" {% if sort_by == "activity" %}selected{% endif %}>Activity</option>
+                                <option value="conversion_date" {% if sort_by == "conversion_date" %}selected{% endif %}>Conversion Date</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <select name="order" class="form-select">
+                                <option value="asc" {% if sort_order == "asc" %}selected{% endif %}>Ascending</option>
+                                <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Descending</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Bulk Actions -->
+    <form id="bulk-action-form" method="post" action="{% url 'admin_bulk_action' %}">
+        {% csrf_token %}
+        
+        <div class="sticky-controls mb-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="select-all">
+                            Select All
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <select name="action" class="form-select d-inline-block w-auto">
+                        <option value="">-- Bulk Action --</option>
+                        <option value="convert">Convert to Clients</option>
+                        <option value="mark_inactive">Mark as Inactive</option>
+                        <option value="mark_prospect">Mark as Prospects</option>
+                        <option value="delete">Delete Selected</option>
+                        <option value="export">Export to CSV</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Business Grid -->
+        <div class="row">
+            {% for item in business_data %}
+            {% with business=item.business %}
+            <div class="col-lg-4 col-md-6">
+                <div class="business-card">
+                    <!-- Checkbox for bulk actions -->
+                    <input class="form-check-input select-business" type="checkbox" name="selected_businesses" value="{{ business.id }}">
+                    
+                    <!-- Business Thumbnail (placeholder) -->
+                    <div class="thumbnail-container">
+                        {% if business.photo_url %}
+                            <img src="{{ business.photo_url }}" alt="{{ business.name }}">
+                        {% else %}
+                            <img src="https://via.placeholder.com/400x200?text={{ business.name|urlencode }}" alt="{{ business.name }}">
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Business Header -->
+                    <div class="business-header">
+                        <h3>{{ business.name }}</h3>
+                        <div class="business-meta">
+                            <span><i class="fas fa-map-marker-alt"></i> {{ business.city }}, {{ business.state }}</span>
+                            {% if business.rating %}
+                            <span class="rating-stars">
+                                <i class="fas fa-star"></i> {{ business.rating }} ({{ business.reviews_count }})
+                            </span>
+                            {% endif %}
+                            
+                            {% if business.status == 'converted' %}
+                            <span class="badge bg-success">Client</span>
+                            {% elif business.status == 'prospect' %}
+                            <span class="badge bg-primary">Prospect</span>
+                            {% elif business.status == 'inactive' %}
+                            <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Business Body -->
+                    <div class="business-body">
+                        <!-- Activity Stats -->
+                        <div class="mb-3">
+                            <div class="activity-badge badge-primary">
+                                <i class="fas fa-calendar-check"></i>
+                                {{ item.appointment_count }} Appointments
+                            </div>
+                            <div class="activity-badge badge-info">
+                                <i class="fas fa-comments"></i>
+                                {{ item.message_count }} Messages
+                            </div>
+                            <div class="activity-badge badge-success">
+                                <i class="fas fa-users"></i>
+                                {{ item.contact_count }} Contacts
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="business-actions">
+                            <a href="{% url 'admin_business_detail' business.slug %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-info-circle"></i> Details
+                            </a>
+                            
+                            <a href="{% url 'admin_business_preview' business.slug %}" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye"></i> Preview
+                            </a>
+                            
+                            <a href="{% url 'prospect_direct' business.slug %}" target="_blank" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-globe"></i> View Site
+                            </a>
+                            
+                            <a href="{% url 'business_dashboard' business.slug %}" target="_blank" class="btn btn-success btn-sm">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endwith %}
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No businesses found.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </form>
+    
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+    
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+<script>
+    // Select all functionality
+    document.getElementById('select-all').addEventListener('change', function() {
+        const checkboxes = document.querySelectorAll('input[name="selected_businesses"]');
+        for (let checkbox of checkboxes) {
+            checkbox.checked = this.checked;
+        }
+    });
+    
+    // Submit form with bulk action
+    document.getElementById('bulk-action-form').addEventListener('submit', function(e) {
+        const action = document.querySelector('select[name="action"]').value;
+        const selectedCount = document.querySelectorAll('input[name="selected_businesses"]:checked').length;
+        
+        if (!action) {
+            e.preventDefault();
+            alert('Please select an action to perform');
+            return false;
+        }
+        
+        if (selectedCount === 0) {
+            e.preventDefault();
+            alert('Please select at least one business');
+            return false;
+        }
+        
+        if (action === 'delete' && !confirm(`Are you sure you want to delete ${selectedCount} business(es)?`)) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+{% endblock %}

@@ -12,6 +12,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    {% if prospect.status == 'converted' %}
+    <!-- Additional resources for converted clients -->
+    {% if client_settings.enable_online_payments %}
+    <script src="https://js.stripe.com/v3/"></script>
+    {% endif %}
+    {% endif %}
+    
     <style>
         :root {
             --primary-color: {{ prospect.primary_color|default:"#336699" }};
@@ -383,7 +390,7 @@
 <body>
     <!-- Login Banner -->
     <div style="background-color: #336699; padding: 10px 0; text-align: center; color: white; font-weight: bold;">
-        <a href="/business/login/" style="color: white; text-decoration: none;">
+        <a href="/business/login/?business={{ prospect.slug }}" style="color: white; text-decoration: none;">
             Business Owner? <span style="background: rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; margin-left: 10px;">CLICK HERE TO LOGIN</span>
         </a>
     </div>
@@ -391,10 +398,15 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">{{ prospect.name }}</a>
+            <a class="navbar-brand" href="#">
+                {{ prospect.name }}
+                {% if prospect.status == 'converted' %}
+                <span class="badge bg-success ms-2">Premium</span>
+                {% endif %}
+            </a>
             
             <!-- Always visible login button -->
-            <a class="btn btn-primary d-lg-none me-2" href="/business/login/">
+            <a class="btn btn-primary d-lg-none me-2" href="/business/login/?business={{ prospect.slug }}">
                 <i class="fas fa-user-lock"></i> Login
             </a>
             
@@ -424,7 +436,7 @@
                     </li>
                     <!-- Desktop login button -->
                     <li class="nav-item ms-lg-3 d-none d-lg-block">
-                        <a class="btn btn-primary px-3 py-2" href="/business/login/" style="font-weight: 600;">
+                        <a class="btn btn-primary px-3 py-2" href="/business/login/?business={{ prospect.slug }}" style="font-weight: 600;">
                             <i class="fas fa-user-lock me-1"></i> Business Login
                         </a>
                     </li>
@@ -717,6 +729,24 @@
                             <textarea class="form-control" id="message" rows="4" placeholder="How can we help you?"></textarea>
                         </div>
                         <button type="submit" class="btn w-100" style="background-color: var(--primary-color); color: white;">Send Message</button>
+                        
+                        {% if prospect.status == 'converted' and client_settings %}
+                        <div class="mt-3">
+                            {% if client_settings.enable_online_payments %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">Premium Feature</span>
+                                <span><i class="fas fa-credit-card me-1"></i> Online Payments Available</span>
+                            </div>
+                            {% endif %}
+                            
+                            {% if client_settings.enable_sms_notifications %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="badge bg-success me-2">Premium Feature</span>
+                                <span><i class="fas fa-sms me-1"></i> SMS Notifications</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -855,7 +885,7 @@
     </div>
     
     <!-- Floating Login Button -->
-    <a href="/business/login/" class="chat-widget-btn" style="background-color: #28a745;">
+    <a href="/business/login/?business={{ prospect.slug }}" class="chat-widget-btn" style="background-color: #28a745;">
         <i class="fas fa-user-lock"></i>
     </a>
 

@@ -9,10 +9,22 @@ from datetime import datetime
 
 def home(request):
     """Main view that handles both main site and prospect sites."""
-    if hasattr(request, 'subdomain') and request.subdomain:
-        # Find prospect by subdomain
-        prospect = get_object_or_404(Prospect, slug=request.subdomain)
-        return render(request, 'prospect_site.html', {'prospect': prospect})
+    # Check for business_slug (from subdomain or custom domain)
+    if hasattr(request, 'business_slug') and request.business_slug:
+        # Find prospect by business_slug
+        prospect = get_object_or_404(Prospect, slug=request.business_slug)
+        # If this is a converted client, use additional client settings
+        client_settings = None
+        if prospect.status == 'converted':
+            from .models import ClientSettings
+            try:
+                client_settings = ClientSettings.objects.get(prospect=prospect)
+            except ClientSettings.DoesNotExist:
+                pass
+        return render(request, 'prospect_site.html', {
+            'prospect': prospect,
+            'client_settings': client_settings
+        })
     else:
         # Main site
         prospects = Prospect.objects.all()
@@ -21,14 +33,40 @@ def home(request):
 def prospect_page(request, slug):
     """Alternative view for accessing prospect pages via path."""
     prospect = get_object_or_404(Prospect, slug=slug)
-    return render(request, 'prospect_site.html', {'prospect': prospect})
+    
+    # If this is a converted client, use additional client settings
+    client_settings = None
+    if prospect.status == 'converted':
+        from .models import ClientSettings
+        try:
+            client_settings = ClientSettings.objects.get(prospect=prospect)
+        except ClientSettings.DoesNotExist:
+            pass
+            
+    return render(request, 'prospect_site.html', {
+        'prospect': prospect,
+        'client_settings': client_settings
+    })
 
 # Business Backend Views
 def business_login(request):
     """Login page for business."""
+    
+    # Get the business from the URL query parameter if available
+    business_slug = request.GET.get('business', None)
+    
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        
+        # Auto-fill username/password if provided in query parameter
+        if not username and not password and business_slug:
+            try:
+                prospect = Prospect.objects.get(slug=business_slug)
+                username = prospect.username
+                password = prospect.password
+            except Prospect.DoesNotExist:
+                pass
         
         try:
             # First try to find the prospect by username
@@ -41,7 +79,7 @@ def business_login(request):
                 request.session['business_name'] = prospect.name
                 return redirect('business_dashboard', slug=prospect.slug)
             else:
-                messages.error(request, "Incorrect password. The password should be the same as your username.")
+                messages.error(request, "Incorrect password. Please try again or contact support.")
         except Prospect.DoesNotExist:
             # If username not found, check if it's a slug
             try:
@@ -54,11 +92,23 @@ def business_login(request):
                     request.session['business_name'] = prospect.name
                     return redirect('business_dashboard', slug=prospect.slug)
                 else:
-                    messages.error(request, "Incorrect password. The password should be the same as your username.")
+                    messages.error(request, "Incorrect password. Please try again or contact support.")
             except Prospect.DoesNotExist:
-                messages.error(request, "Business not found. Try one of the example logins shown below.")
+                messages.error(request, "Business not found. Please try again or contact support.")
     
-    return render(request, 'business_login.html')
+    # Get business credentials from business parameter in URL
+    business_credentials = None
+    if business_slug:
+        try:
+            prospect = Prospect.objects.get(slug=business_slug)
+            business_credentials = {
+                'username': prospect.username,
+                'password': prospect.password
+            }
+        except Prospect.DoesNotExist:
+            pass
+    
+    return render(request, 'business_login.html', {'business_credentials': business_credentials})
 
 def business_dashboard(request, slug):
     """Dashboard for business to manage appointments and messages."""

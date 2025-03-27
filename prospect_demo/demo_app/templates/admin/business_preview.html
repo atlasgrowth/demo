@@ -1,0 +1,39 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ business.name }} | Preview | {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .iframe-container {
+        width: 100%;
+        height: calc(100vh - 100px);
+        border: none;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="action-buttons">
+        <a href="{% url 'admin_business_detail' business.slug %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Business Details
+        </a>
+        
+        <a href="{% url 'prospect_direct' business.slug %}" target="_blank" class="btn btn-primary">
+            <i class="fas fa-external-link-alt"></i> Open in New Tab
+        </a>
+    </div>
+    
+    <h1>{{ business.name }} - Demo Site Preview</h1>
+    
+    <iframe src="{% url 'prospect_direct' business.slug %}" class="iframe-container"></iframe>
+</div>
+{% endblock %}

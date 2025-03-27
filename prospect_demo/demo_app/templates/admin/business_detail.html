@@ -1,0 +1,404 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ business.name }} | Business Details | {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .detail-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+    
+    .detail-header {
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .detail-header h2 {
+        margin: 0;
+        font-size: 22px;
+    }
+    
+    .detail-body {
+        padding: 20px;
+    }
+    
+    .info-box {
+        margin-bottom: 10px;
+    }
+    
+    .info-box label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+        color: #555;
+    }
+    
+    .info-box p {
+        margin: 0;
+    }
+    
+    .stats-card {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        text-align: center;
+    }
+    
+    .stats-card h3 {
+        font-size: 24px;
+        margin: 0 0 5px 0;
+    }
+    
+    .stats-card p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .activity-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .activity-item {
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .rating-stars {
+        color: #ffc107;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-left: 5px;
+    }
+    
+    .status-pending {
+        background-color: #fff8e1;
+        color: #ff9800;
+    }
+    
+    .status-confirmed {
+        background-color: #e8f5e9;
+        color: #4caf50;
+    }
+    
+    .status-completed {
+        background-color: #e3f2fd;
+        color: #0d6efd;
+    }
+    
+    .status-cancelled {
+        background-color: #ffebee;
+        color: #f44336;
+    }
+    
+    .demo-iframe {
+        width: 100%;
+        height: 500px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+    
+    .color-swatch {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    
+    <!-- Breadcrumbs & Actions -->
+    <div class="action-buttons">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Business List
+        </a>
+        
+        <a href="{% url 'prospect_direct' business.slug %}" target="_blank" class="btn btn-primary">
+            <i class="fas fa-globe"></i> View Demo Site
+        </a>
+        
+        <a href="{% url 'business_dashboard' business.slug %}" target="_blank" class="btn btn-success">
+            <i class="fas fa-sign-in-alt"></i> Access Business Portal
+        </a>
+        
+        <a href="{% url 'admin:demo_app_prospect_change' business.id %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit Business
+        </a>
+        
+        {% if business.status == 'prospect' %}
+        <a href="{% url 'admin_convert_to_client' business.slug %}" class="btn btn-info">
+            <i class="fas fa-arrow-up"></i> Convert to Client
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="row">
+        <!-- Business Details Column -->
+        <div class="col-lg-4">
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2>{{ business.name }}</h2>
+                    {% if business.rating %}
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i> {{ business.rating }} ({{ business.reviews_count }} reviews)
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="detail-body">
+                    <div class="info-box">
+                        <label>Business Type</label>
+                        <p>{{ business.business_type|default:"Not specified" }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Contact Information</label>
+                        <p><i class="fas fa-phone"></i> {{ business.phone|default:"Not provided" }}</p>
+                        <p><i class="fas fa-envelope"></i> {{ business.email|default:"Not provided" }}</p>
+                        <p><i class="fas fa-globe"></i> {{ business.website|default:"Not provided" }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Location</label>
+                        <p>{{ business.address|default:"" }}</p>
+                        <p>{{ business.city|default:"" }}{% if business.city and business.state %}, {% endif %}{{ business.state|default:"" }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Description</label>
+                        <p>{{ business.description|default:"No description provided" }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Brand Colors</label>
+                        <p>
+                            <span class="color-swatch" style="background-color: {{ business.primary_color }}"></span>
+                            Primary: {{ business.primary_color }}
+                        </p>
+                        <p>
+                            <span class="color-swatch" style="background-color: {{ business.secondary_color }}"></span>
+                            Secondary: {{ business.secondary_color }}
+                        </p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Login Credentials</label>
+                        <p><strong>Username:</strong> {{ business.username }}</p>
+                        <p><strong>Password:</strong> {{ business.password }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Demo Site URL</label>
+                        <p>{{ business.demo_site_url }}</p>
+                    </div>
+                    
+                    {% if business.status == 'converted' and client_settings %}
+                    <div class="info-box">
+                        <label>Client Status</label>
+                        <p><span class="badge bg-success">Converted Client</span> on {{ business.conversion_date|date:"M d, Y" }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Subscription Plan</label>
+                        <p>{{ client_settings.get_plan_display }}</p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Custom Domain</label>
+                        <p>
+                            {{ client_settings.custom_domain|default:"Not set" }}
+                            {% if client_settings.domain_verified %}
+                            <span class="badge bg-success">Verified</span>
+                            {% else %}
+                            <span class="badge bg-warning">Unverified</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div class="info-box">
+                        <label>Enabled Features</label>
+                        <p>
+                            {% if client_settings.enable_sms_notifications %}
+                            <span class="badge bg-info">SMS Notifications</span>
+                            {% endif %}
+                            
+                            {% if client_settings.enable_email_notifications %}
+                            <span class="badge bg-info">Email Notifications</span>
+                            {% endif %}
+                            
+                            {% if client_settings.enable_online_payments %}
+                            <span class="badge bg-info">Online Payments</span>
+                            {% endif %}
+                            
+                            {% if client_settings.enable_staff_accounts %}
+                            <span class="badge bg-info">Staff Accounts ({{ client_settings.max_staff_accounts }})</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Activity Column -->
+        <div class="col-lg-8">
+            <div class="row">
+                <!-- Statistics -->
+                <div class="col-12">
+                    <h3>Activity Overview</h3>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h3>{{ appointment_counts.pending }}</h3>
+                                <p>Pending Appointments</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h3>{{ appointment_counts.confirmed|add:appointment_counts.completed }}</h3>
+                                <p>Confirmed/Completed</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h3>{{ contact_counts.lead }}</h3>
+                                <p>Leads</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stats-card">
+                                <h3>{{ contact_counts.customer }}</h3>
+                                <p>Customers</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Appointments -->
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h2>Recent Appointments</h2>
+                        </div>
+                        <div class="detail-body">
+                            {% if appointments %}
+                            <ul class="activity-list">
+                                {% for appt in appointments %}
+                                <li class="activity-item">
+                                    <strong>{{ appt.customer_name }}</strong> -
+                                    {{ appt.service_type }}
+                                    <div>
+                                        {{ appt.appointment_date|date:"M d, Y" }} ({{ appt.appointment_time_slot }})
+                                        <span class="status-badge status-{{ appt.status }}">
+                                            {{ appt.status|title }}
+                                        </span>
+                                    </div>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">No appointments found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Messages -->
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h2>Recent Messages</h2>
+                        </div>
+                        <div class="detail-body">
+                            {% if messages %}
+                            <ul class="activity-list">
+                                {% for msg in messages %}
+                                <li class="activity-item">
+                                    <strong>{{ msg.sender_name }}</strong>
+                                    <small class="text-muted">({{ msg.sender_type|title }})</small>
+                                    <div>{{ msg.message|truncatechars:50 }}</div>
+                                    <small class="text-muted">{{ msg.timestamp|date:"M d, Y H:i" }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">No messages found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Contacts -->
+                <div class="col-md-6">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h2>Recent Contacts</h2>
+                        </div>
+                        <div class="detail-body">
+                            {% if contacts %}
+                            <ul class="activity-list">
+                                {% for contact in contacts %}
+                                <li class="activity-item">
+                                    <strong>{{ contact.name }}</strong>
+                                    <span class="badge bg-info">{{ contact.contact_type|title }}</span>
+                                    <div>
+                                        {% if contact.phone %}Phone: {{ contact.phone }}{% endif %}
+                                        {% if contact.email %}Email: {{ contact.email }}{% endif %}
+                                    </div>
+                                    <small class="text-muted">Added {{ contact.created_at|date:"M d, Y" }}</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="text-muted">No contacts found</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Demo Site Preview -->
+                <div class="col-12">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h2>Demo Site Preview</h2>
+                        </div>
+                        <div class="detail-body">
+                            <iframe src="{% url 'prospect_direct' business.slug %}" class="demo-iframe"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

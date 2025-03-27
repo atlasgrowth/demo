@@ -1,0 +1,235 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}Convert {{ business.name }} to Client | {{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+    .conversion-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        overflow: hidden;
+    }
+    
+    .conversion-header {
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .conversion-header h2 {
+        margin: 0;
+        font-size: 22px;
+    }
+    
+    .conversion-body {
+        padding: 20px;
+    }
+    
+    .info-box {
+        margin-bottom: 15px;
+    }
+    
+    .info-box label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+        color: #555;
+    }
+    
+    .feature-list {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .feature-item {
+        margin-bottom: 5px;
+    }
+    
+    .plan-card {
+        border: 1px solid #eee;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    
+    .plan-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transform: translateY(-5px);
+    }
+    
+    .plan-card.selected {
+        border: 2px solid #0d6efd;
+        background-color: #f8f9fe;
+    }
+    
+    .plan-card h3 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 20px;
+    }
+    
+    .plan-price {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: #0d6efd;
+    }
+    
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <!-- Breadcrumbs & Actions -->
+    <div class="action-buttons">
+        <a href="{% url 'admin_business_detail' business.slug %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Business Details
+        </a>
+    </div>
+    
+    <div class="conversion-card">
+        <div class="conversion-header">
+            <h2>Convert {{ business.name }} to Full Client</h2>
+            <p class="text-muted">Set up client settings and subscription plan</p>
+        </div>
+        
+        <div class="conversion-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="info-box">
+                            <label>Business Name</label>
+                            <p>{{ business.name }}</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <label>Location</label>
+                            <p>{{ business.city }}, {{ business.state }}</p>
+                        </div>
+                        
+                        <div class="info-box">
+                            <label>Contact Information</label>
+                            <p>Phone: {{ business.phone|default:"Not provided" }}</p>
+                            <p>Email: {{ business.email|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="form-group mb-3">
+                            <label for="custom_domain" class="form-label">Custom Domain</label>
+                            <div class="input-group">
+                                <span class="input-group-text">https://</span>
+                                <input type="text" class="form-control" id="custom_domain" name="custom_domain" 
+                                    placeholder="yourbusiness.com" value="{{ client_settings.custom_domain|default:'' }}">
+                            </div>
+                            <div class="form-text text-muted">
+                                Leave blank to continue using the subdomain {{ business.slug }}.localhost:8000
+                            </div>
+                        </div>
+                        
+                        <h4 class="mt-4">Subscription Plan</h4>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="plan-card" id="plan-basic">
+                                    <h3>Basic</h3>
+                                    <div class="plan-price">$49/mo</div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="plan" id="plan_basic" value="basic" checked>
+                                        <label class="form-check-label" for="plan_basic">
+                                            Select Basic Plan
+                                        </label>
+                                    </div>
+                                    <div class="feature-list">
+                                        <div class="feature-item">✓ Appointment Scheduling</div>
+                                        <div class="feature-item">✓ Chat Widget</div>
+                                        <div class="feature-item">✓ Lead Management</div>
+                                        <div class="feature-item">✓ Email Notifications</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="plan-card" id="plan-premium">
+                                    <h3>Premium</h3>
+                                    <div class="plan-price">$99/mo</div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="plan" id="plan_premium" value="premium">
+                                        <label class="form-check-label" for="plan_premium">
+                                            Select Premium Plan
+                                        </label>
+                                    </div>
+                                    <div class="feature-list">
+                                        <div class="feature-item">✓ All Basic Features</div>
+                                        <div class="feature-item">✓ SMS Notifications</div>
+                                        <div class="feature-item">✓ Custom Domain</div>
+                                        <div class="feature-item">✓ Enhanced Reporting</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="plan-card" id="plan-enterprise">
+                                    <h3>Enterprise</h3>
+                                    <div class="plan-price">$199/mo</div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="plan" id="plan_enterprise" value="enterprise">
+                                        <label class="form-check-label" for="plan_enterprise">
+                                            Select Enterprise Plan
+                                        </label>
+                                    </div>
+                                    <div class="feature-list">
+                                        <div class="feature-item">✓ All Premium Features</div>
+                                        <div class="feature-item">✓ Online Payments</div>
+                                        <div class="feature-item">✓ Staff Accounts (5)</div>
+                                        <div class="feature-item">✓ API Integration</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 text-center">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-arrow-up"></i> Convert to Client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Highlight selected plan
+    document.querySelectorAll('input[name="plan"]').forEach(function(radio) {
+        radio.addEventListener('change', function() {
+            // Remove selected class from all plan cards
+            document.querySelectorAll('.plan-card').forEach(function(card) {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to the selected plan card
+            if (this.checked) {
+                document.getElementById('plan-' + this.value).classList.add('selected');
+            }
+        });
+    });
+    
+    // Initialize selected plan
+    const selectedPlan = document.querySelector('input[name="plan"]:checked');
+    if (selectedPlan) {
+        document.getElementById('plan-' + selectedPlan.value).classList.add('selected');
+    }
+</script>
+{% endblock %}
