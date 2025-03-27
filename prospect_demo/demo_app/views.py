@@ -30,24 +30,33 @@ def business_login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
         
-        # Simple password check - accept any password
         try:
-            # Just find the prospect by username
+            # First try to find the prospect by username
             prospect = Prospect.objects.get(username=username)
-            # Store in session
-            request.session['business_id'] = prospect.id
-            request.session['business_name'] = prospect.name
-            return redirect('business_dashboard', slug=prospect.slug)
-        except Prospect.DoesNotExist:
-            # If username not found, check if it's a slug
-            try:
-                prospect = Prospect.objects.get(slug=username)
+            
+            # Check if the password matches
+            if password == prospect.password:
                 # Store in session
                 request.session['business_id'] = prospect.id
                 request.session['business_name'] = prospect.name
                 return redirect('business_dashboard', slug=prospect.slug)
+            else:
+                messages.error(request, "Incorrect password. The password should be the same as your username.")
+        except Prospect.DoesNotExist:
+            # If username not found, check if it's a slug
+            try:
+                prospect = Prospect.objects.get(slug=username)
+                
+                # Check if the password matches
+                if password == prospect.password:
+                    # Store in session
+                    request.session['business_id'] = prospect.id
+                    request.session['business_name'] = prospect.name
+                    return redirect('business_dashboard', slug=prospect.slug)
+                else:
+                    messages.error(request, "Incorrect password. The password should be the same as your username.")
             except Prospect.DoesNotExist:
-                messages.error(request, "User not found. Try 'coolray-heating-cooling'")
+                messages.error(request, "Business not found. Try one of the example logins shown below.")
     
     return render(request, 'business_login.html')
 

@@ -6,119 +6,343 @@
     <title>Business Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #336699;
+            --primary-dark: #264d73;
+            --secondary-color: #66aacc;
+            --text-color: #33404F;
+            --border-radius: 0.75rem;
+            --box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
-            height: 100vh;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            min-height: 100vh;
+            color: var(--text-color);
         }
+        
         .login-container {
-            max-width: 400px;
             width: 100%;
-            padding: 30px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            display: flex;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--border-radius);
+            overflow: hidden;
         }
-        .login-header {
+        
+        .login-image {
+            flex: 1;
+            background-image: url('https://images.unsplash.com/photo-1567396782056-f98651e58e02?q=80&w=1974&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            display: none;
+        }
+        
+        .login-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(51, 102, 153, 0.7);
+            z-index: 1;
+        }
+        
+        .login-image-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            margin-bottom: 30px;
+            color: white;
+            z-index: 2;
+            width: 80%;
         }
-        .login-header img {
-            max-width: 100px;
-            margin-bottom: 15px;
+        
+        .login-image-content h2 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            font-size: 1.75rem;
         }
-        .form-control {
-            border-radius: 5px;
-            padding: 12px;
-            margin-bottom: 20px;
+        
+        .login-image-content p {
+            font-size: 1rem;
+            opacity: 0.9;
         }
-        .btn-primary {
-            background-color: #336699;
-            border: none;
-            border-radius: 5px;
-            padding: 12px;
-            font-weight: 600;
+        
+        .login-card {
+            background-color: white;
             width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
         }
+        
+        .login-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .login-header h3 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        
+        .login-header p {
+            margin-top: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .login-body {
+            padding: 2rem;
+        }
+        
+        .form-control {
+            padding: 0.75rem 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 0.375rem;
+            border: 1px solid #dee2e6;
+            font-size: 0.95rem;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(51, 102, 153, 0.25);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            border-radius: 0.375rem;
+            width: 100%;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+        
         .btn-primary:hover {
-            background-color: #265080;
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(51, 102, 153, 0.3);
         }
+        
         .alert {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
+            border-radius: 0.375rem;
+            font-size: 0.9rem;
+        }
+        
+        .login-footer {
+            text-align: center;
+            padding: 0 2rem 2rem;
+            color: #6c757d;
+        }
+        
+        .login-footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .login-info {
+            background-color: rgba(102, 170, 204, 0.1);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .login-info h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+        
+        .login-info p {
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-examples {
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+        }
+        
+        .login-example {
+            background-color: #f8f9fa;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0.25rem;
+            font-size: 0.8rem;
+        }
+        
+        .quick-login {
+            margin-top: 1.5rem;
+        }
+        
+        .quick-login p {
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            color: #6c757d;
+        }
+        
+        .quick-login .btn {
+            margin-bottom: 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            padding: 0.5rem 0.75rem;
+        }
+        
+        @media (min-width: 768px) {
+            .login-image {
+                display: block;
+            }
+            
+            .login-card {
+                max-width: 450px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <div class="login-header">
-            <i class="fas fa-building fa-3x text-primary mb-3"></i>
-            <h2>Business Login</h2>
-            <p class="text-muted">Access your business portal</p>
+        <div class="login-image">
+            <div class="login-image-content">
+                <h2>Welcome to Your Business Portal</h2>
+                <p>Access your dashboard to manage appointments, messages, and customer contacts all in one place.</p>
+            </div>
         </div>
         
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-        
-        <div class="alert alert-info text-center mb-4">
-            <i class="fas fa-info-circle me-2"></i> <strong>Simple Login:</strong> Enter any business name and any password
-        </div>
-        
-        <form method="post" action="{% url 'business_login' %}">
-            {% csrf_token %}
-            <div class="mb-3">
-                <label for="username" class="form-label">Business Name</label>
-                <input type="text" class="form-control" id="username" name="username" value="coolray-heating-cooling" required>
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-building fa-3x mb-3"></i>
+                <h3>Business Login</h3>
+                <p class="mb-0">Access your business portal</p>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" value="123" required>
-                <div class="form-text">Any password will work</div>
+            
+            <div class="login-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" action="{% url 'business_login' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt me-2"></i> Login
+                    </button>
+                </form>
+                
+                <div class="login-info">
+                    <h5><i class="fas fa-info-circle me-1"></i> Login Information</h5>
+                    <p>Your username and password are both your business name with no spaces or special characters.</p>
+                    
+                    <div class="login-examples">
+                        <p class="mb-1"><strong>Examples:</strong></p>
+                        <div class="login-example">
+                            <span>coolrayheatingcooling</span>
+                            <button class="copy-btn" onclick="copyToClipboard('coolrayheatingcooling')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="login-example">
+                            <span>stegallheatingair</span>
+                            <button class="copy-btn" onclick="copyToClipboard('stegallheatingair')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <div class="login-example">
+                            <span>birminghamhvacexperts</span>
+                            <button class="copy-btn" onclick="copyToClipboard('birminghamhvacexperts')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-login">
+                    <p class="text-center">Quick Login Buttons:</p>
+                    <div class="row">
+                        <div class="col-4">
+                            <form method="post" action="{% url 'business_login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="username" value="stegallheatingair">
+                                <input type="hidden" name="password" value="stegallheatingair">
+                                <button type="submit" class="btn btn-success w-100">Stegall</button>
+                            </form>
+                        </div>
+                        <div class="col-4">
+                            <form method="post" action="{% url 'business_login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="username" value="coolrayheatingcooling">
+                                <input type="hidden" name="password" value="coolrayheatingcooling">
+                                <button type="submit" class="btn btn-success w-100">Coolray</button>
+                            </form>
+                        </div>
+                        <div class="col-4">
+                            <form method="post" action="{% url 'business_login' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="username" value="temperatureprobirmingham">
+                                <input type="hidden" name="password" value="temperatureprobirmingham">
+                                <button type="submit" class="btn btn-success w-100">TempPro</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-lg w-100">Log In</button>
-        </form>
-        
-        <div class="mt-4 text-center">
-            <p class="mb-0 text-muted">Quick Login Buttons:</p>
-            <div class="row mt-2">
-                <div class="col-4">
-                    <form method="post" action="{% url 'business_login' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="username" value="stegall-heating-air">
-                        <input type="hidden" name="password" value="123">
-                        <button type="submit" class="btn btn-success w-100">Stegall</button>
-                    </form>
-                </div>
-                <div class="col-4">
-                    <form method="post" action="{% url 'business_login' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="username" value="coolray-heating-cooling">
-                        <input type="hidden" name="password" value="123">
-                        <button type="submit" class="btn btn-success w-100">Coolray</button>
-                    </form>
-                </div>
-                <div class="col-4">
-                    <form method="post" action="{% url 'business_login' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="username" value="temperaturepro-birmingham">
-                        <input type="hidden" name="password" value="123">
-                        <button type="submit" class="btn btn-success w-100">TempPro</button>
-                    </form>
-                </div>
+            
+            <div class="login-footer">
+                <p>Need assistance? <a href="#">Contact Support</a></p>
             </div>
         </div>
     </div>
     
     <script>
-        function fillLogin(username, password) {
-            document.getElementById('username').value = username;
-            document.getElementById('password').value = password;
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show a small visual indicator that copying succeeded
+                const copyBtn = event.currentTarget;
+                const originalContent = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalContent;
+                }, 2000);
+            });
         }
     </script>
 </body>

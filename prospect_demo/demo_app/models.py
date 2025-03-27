@@ -52,9 +52,14 @@ class Prospect(models.Model):
         if not self.demo_site_url:
             self.demo_site_url = f"{self.slug}.localhost:8000"
             
-        # Set username for backend login
+        # Set username and password for backend login
         if not self.username:
-            self.username = self.slug
+            # Remove any non-alphanumeric characters and make lowercase
+            self.username = ''.join(e for e in self.name if e.isalnum()).lower()
+            
+        # Set password same as username if not provided
+        if not self.password or self.password == "demo123":
+            self.password = self.username
             
         super().save(*args, **kwargs)
     
